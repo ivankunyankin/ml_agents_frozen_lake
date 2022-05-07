@@ -14,6 +14,11 @@ public class MoveToGoalAgent : Agent
     private List<float> hole_coordinates = new List<float>();
     [SerializeField] private Transform targetTransform;
     [SerializeField] private GameObject blocks;
+    Rigidbody rBody;
+
+    void Start () {
+        rBody = GetComponent<Rigidbody>();
+    }
 
     public override void OnEpisodeBegin() {
 
@@ -21,10 +26,14 @@ public class MoveToGoalAgent : Agent
         int agentX = Random.Range(0, 4);
         int targetX = Random.Range(0, 4);
 
+        // If the Agent fell, zero its momentum
+        rBody.angularVelocity = Vector3.zero;
+        rBody.velocity = Vector3.zero;
+
         // set the agent and goal positions
-        transform.localPosition = new Vector3(agentX * 2 - 1, 0.41f, -1);
+        transform.localPosition = new Vector3(agentX * 2, 0.41f, -1);
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
-        targetTransform.localPosition = new Vector3(targetX * 2 - 1, 0.5f, 5);
+        targetTransform.localPosition = new Vector3(targetX * 2, 0.5f, 5);
 
         // if holes not empty, clear it and coordinates
         if (holes?.Any() == true) {
@@ -73,23 +82,30 @@ public class MoveToGoalAgent : Agent
         float moveX = actions.ContinuousActions[0];
         float moveZ = actions.ContinuousActions[1];
         float moveSpeed = 2.5f;
-        transform.localPosition += new Vector3(moveX, 0, moveZ) * Time.deltaTime * moveSpeed;
+        rBody.MovePosition(transform.position + new Vector3(moveX, 0, moveZ) * Time.deltaTime * moveSpeed);
+
+
+        // Rewards
+        float distanceToTarget = Vector3.Distance(transform.localPosition, targetTransform.localPosition);
+
+        // Reached target
+        if (distanceToTarget < 0.8f)
+        {
+            SetReward(1.0f);
+            EndEpisode();
+        }
+
+        // Fell off platform
+        else if (transform.localPosition.y < 0)
+        {
+            EndEpisode();
+        }
+
     }
 
     public override void Heuristic(in ActionBuffers actionsOut) {
         ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
         continuousActions[0] = Input.GetAxisRaw("Horizontal");
         continuousActions[1] = Input.GetAxisRaw("Vertical");
-    }
-
-    private void OnTriggerEnter(Collider other) {
-        if (other.TryGetComponent<Goal>(out Goal goal)) {
-            SetReward(+1f);
-            EndEpisode();
-        }
-        if (other.TryGetComponent<Water>(out Water water)) {
-            SetReward(-1f);
-            EndEpisode();
-        }
     }
 }
