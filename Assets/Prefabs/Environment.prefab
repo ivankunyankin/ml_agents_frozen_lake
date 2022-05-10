@@ -309,7 +309,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8784021364168399157}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1, y: 0, z: 0}
+  m_LocalPosition: {x: 1, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 8784021365168224780}
@@ -834,7 +834,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8784021364691426859}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: 5}
+  m_LocalPosition: {x: 0, y: 0.5, z: 6}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 8784021364971141725}
@@ -897,7 +897,7 @@ SphereCollider:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8784021364691426859}
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
@@ -1054,7 +1054,6 @@ GameObject:
   - component: {fileID: 8784021365009421984}
   - component: {fileID: 8784021365009421991}
   - component: {fileID: 8784021365009421990}
-  - component: {fileID: 8784021365009421989}
   - component: {fileID: 8784021365009421985}
   m_Layer: 0
   m_Name: Water
@@ -1071,7 +1070,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8784021365009421988}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3, y: -2.63, z: 2.024414}
+  m_LocalPosition: {x: 3, y: -2.63, z: 3.024414}
   m_LocalScale: {x: 8.793414, y: 5, z: 8.753486}
   m_Children: []
   m_Father: {fileID: 8784021364971141725}
@@ -1126,19 +1125,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &8784021365009421989
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8784021365009421988}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 1
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1.3595572, y: 0.79240197, z: 1.3452656}
-  m_Center: {x: 0.013940255, y: -0.103800915, z: -0.020748211}
 --- !u!114 &8784021365009421985
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1468,7 +1454,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8784021365479738310}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 6, y: 0.41, z: -1}
+  m_LocalPosition: {x: 6, y: 0.41, z: 0}
   m_LocalScale: {x: 0.8, y: 0.8, z: 0.8}
   m_Children: []
   m_Father: {fileID: 8784021364971141725}
@@ -1583,7 +1569,6 @@ MonoBehaviour:
     maxStep: 0
   hasUpgradedFromAgentParameters: 1
   MaxStep: 1000
-  num_holes: 0
   targetTransform: {fileID: 8784021364691426871}
   blocks: {fileID: 8784021364168399157}
 --- !u!114 &8784021365479738307

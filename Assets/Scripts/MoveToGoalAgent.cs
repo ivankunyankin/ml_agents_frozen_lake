@@ -8,8 +8,8 @@ using Unity.MLAgents.Sensors;
 
 public class MoveToGoalAgent : Agent
 {
-    [Range(0, 5)]
-    public int num_holes;
+    // [Range(0, 5)]
+    // public int num_holes;
     private List<GameObject> holes = new List<GameObject>();
     private List<float> hole_coordinates = new List<float>();
     [SerializeField] private Transform targetTransform;
@@ -22,18 +22,27 @@ public class MoveToGoalAgent : Agent
 
     public override void OnEpisodeBegin() {
 
+        // Determine the agent's and target's positions
         // For ints Random.Range is maximum Exclusice
         int agentX = Random.Range(0, 4);
+        int agentZ = Random.Range(0, 4);
         int targetX = Random.Range(0, 4);
+        int targetZ = Random.Range(0, 4);
+
+        // Make sure their positions don't overlap
+        while (agentX == targetX && agentZ == targetZ) {
+            targetX = Random.Range(0, 4);
+            targetZ = Random.Range(0, 4);
+        }
 
         // If the Agent fell, zero its momentum
         rBody.angularVelocity = Vector3.zero;
         rBody.velocity = Vector3.zero;
 
         // set the agent and goal positions
-        transform.localPosition = new Vector3(agentX * 2, 0.41f, -1);
+        transform.localPosition = new Vector3(agentX * 2, 0.41f, agentZ * 2);
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
-        targetTransform.localPosition = new Vector3(targetX * 2, 0.5f, 5);
+        targetTransform.localPosition = new Vector3(targetX * 2, 0.5f, targetZ * 2);
 
         // if holes not empty, clear it and coordinates
         if (holes?.Any() == true) {
@@ -46,11 +55,11 @@ public class MoveToGoalAgent : Agent
 
         // exclude agent and goal position from possible locations for holes
         var indices = Enumerable.Range(1, 16).ToList();
-        indices.Remove(agentX + 1);
-        indices.Remove(targetX + 13);
+        indices.Remove(agentX + 1 + 4 * agentZ);
+        indices.Remove(targetX + 1 + 4 * targetZ);
 
         // choose locations for holes and save their coordinates as observations
-        while (holes.Count < num_holes) {
+        while (holes.Count < 4) { // num_holes) {
             int random_idx = Random.Range(0, indices.Count);
             // GameObject block = GameObject.Find("block " + indices[random_idx]);
             GameObject block = blocks.transform.Find("block " + indices[random_idx]).gameObject;
@@ -62,11 +71,11 @@ public class MoveToGoalAgent : Agent
         }
 
         // match the number of observations expected
-        if (num_holes < 5) {
-            int num_empty_observations = 10 - hole_coordinates.Count;
-            List<float> empty_observations = new List<float>(new float[num_empty_observations]);
-            hole_coordinates.AddRange(empty_observations);
-        }
+        // if (num_holes < 5) {
+        //     int num_empty_observations = 10 - hole_coordinates.Count;
+        //     List<float> empty_observations = new List<float>(new float[num_empty_observations]);
+        //     hole_coordinates.AddRange(empty_observations);
+        // }
     }
 
     public override void CollectObservations(VectorSensor sensor) {
@@ -84,12 +93,11 @@ public class MoveToGoalAgent : Agent
         float moveSpeed = 2.5f;
         rBody.MovePosition(transform.position + new Vector3(moveX, 0, moveZ) * Time.deltaTime * moveSpeed);
 
-
         // Rewards
         float distanceToTarget = Vector3.Distance(transform.localPosition, targetTransform.localPosition);
 
         // Reached target
-        if (distanceToTarget < 0.8f)
+        if (distanceToTarget < 0.7f)
         {
             SetReward(1.0f);
             EndEpisode();
@@ -97,7 +105,8 @@ public class MoveToGoalAgent : Agent
 
         // Fell off platform
         else if (transform.localPosition.y < 0)
-        {
+        {   
+            SetReward(-1.0f);
             EndEpisode();
         }
 
