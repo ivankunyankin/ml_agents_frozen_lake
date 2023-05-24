@@ -388,7 +388,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8784021365479738316, guid: 1ad9aec21d5904e7fb0bda8df741901e, type: 3}
       propertyPath: MaxStep
-      value: 3000
+      value: 2000
       objectReference: {fileID: 0}
     - target: {fileID: 8784021365479738316, guid: 1ad9aec21d5904e7fb0bda8df741901e, type: 3}
       propertyPath: num_holes
