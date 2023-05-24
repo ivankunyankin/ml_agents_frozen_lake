@@ -110,6 +110,9 @@ public class MoveToGoalAgent : Agent
             EndEpisode();
         }
 
+        AddReward(-0.0005f);
+        // Debug.Log(GetCumulativeReward());
+
     }
 
     public override void Heuristic(in ActionBuffers actionsOut) {
