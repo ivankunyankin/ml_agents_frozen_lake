@@ -17,21 +17,31 @@ The environment is a for `4 by 4` grid where the agent uses continuous actions t
 Positions of the agent and its target are set randomly at the begging of each episode.
 Holes in the ice are set randomly across the hole grid except positions occupied by the agent and its target.
 
-As `observations` the agent receives and array of `12` floats.\
+As `observations` the agent receives and array of `20` floats.\
 The first four are `X` and `Z` coordinates of the agent itself and the target.
-The last eight are the `X` and `Y` coordinates of ice holes.\
+The rest is a one-hot vector of holes in the ices states (0. for `not a hole` and 1. for `hole`.\
 
 The `action space` represents an array of 2 floats. One for each direction (X and Z axis)
 
 The agent will receive a `reward` of 1 once reached the target and a reward of -1 when falling in a hole or from the edge of the grid.
+It will also continuously get a bit of negative reward to prevent it from doing nothing.
 
 ### Installation
-1. Install Unity editor. Compatible version is 2020.3.32f1
-2. Install ML-agents package version 2.2.1-exp.1 with Package Manager
-3. Install ML agents python package version 0.28.0
+1. Install Unity editor. Compatible version is 2021.3.25f1
+2. Install ML-agents package version 2.2.1-exp.1 using Package Manager
+3. Install requirements
 ```
     python -m venv env
     source env/bin/activate
     pip install --upgrade pip
-    pip install mlagents==0.28.0
+    pip install -r requirements.txt
 ```
+
+### Usage
+Run the following command to start training an agent:
+
+`mlagents-learn config/MoveToGoal.yaml --run-id=test_run`
+
+You can use behavioral cloning to speed up the training process. To do that add the `Demonstration Recorder`
+component to you agent, check `record` and play for some time. Then uncomment `behavioral_clonning` parameters in the config file
+and train.
