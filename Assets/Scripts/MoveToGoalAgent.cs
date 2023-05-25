@@ -8,10 +8,8 @@ using Unity.MLAgents.Sensors;
 
 public class MoveToGoalAgent : Agent
 {
-    // [Range(0, 5)]
-    // public int num_holes;
     private List<GameObject> holes = new List<GameObject>();
-    private List<float> hole_coordinates = new List<float>();
+    private float[] holesOneHot = new float[16];
     [SerializeField] private Transform targetTransform;
     [SerializeField] private GameObject blocks;
     Rigidbody rBody;
@@ -23,7 +21,7 @@ public class MoveToGoalAgent : Agent
     public override void OnEpisodeBegin() {
 
         // Determine the agent's and target's positions
-        // For ints Random.Range is maximum Exclusice
+        // For ints Random.Range is maximum Exclusive
         int agentX = Random.Range(0, 4);
         int agentZ = Random.Range(0, 4);
         int targetX = Random.Range(0, 4);
@@ -50,7 +48,6 @@ public class MoveToGoalAgent : Agent
                 hole.SetActive(true);
             }
             holes.Clear();
-            hole_coordinates.Clear();
         }
 
         // exclude agent and goal position from possible locations for holes
@@ -58,24 +55,19 @@ public class MoveToGoalAgent : Agent
         indices.Remove(agentX + 1 + 4 * agentZ);
         indices.Remove(targetX + 1 + 4 * targetZ);
 
-        // choose locations for holes and save their coordinates as observations
-        while (holes.Count < 4) { // num_holes) {
+        // Reset the array to zeroes
+        holesOneHot = new float[16];
+
+        // choose locations for holes and update the one-hot vector of holes
+        while (holes.Count < 4) {
             int random_idx = Random.Range(0, indices.Count);
-            // GameObject block = GameObject.Find("block " + indices[random_idx]);
             GameObject block = blocks.transform.Find("block " + indices[random_idx]).gameObject;
             holes.Add(block);
-            hole_coordinates.Add(block.transform.localPosition[0]);
-            hole_coordinates.Add(block.transform.localPosition[2]);
             block.SetActive(false);
+            holesOneHot[indices[random_idx] - 1] = 1.0f;
             indices.RemoveAt(random_idx);
         }
 
-        // match the number of observations expected
-        // if (num_holes < 5) {
-        //     int num_empty_observations = 10 - hole_coordinates.Count;
-        //     List<float> empty_observations = new List<float>(new float[num_empty_observations]);
-        //     hole_coordinates.AddRange(empty_observations);
-        // }
     }
 
     public override void CollectObservations(VectorSensor sensor) {
@@ -83,7 +75,7 @@ public class MoveToGoalAgent : Agent
         sensor.AddObservation(transform.localPosition[2]);
         sensor.AddObservation(targetTransform.localPosition[0]);
         sensor.AddObservation(targetTransform.localPosition[2]);
-        sensor.AddObservation(hole_coordinates);
+        sensor.AddObservation(holesOneHot);
 
     }
 
@@ -97,7 +89,7 @@ public class MoveToGoalAgent : Agent
         float distanceToTarget = Vector3.Distance(transform.localPosition, targetTransform.localPosition);
 
         // Reached target
-        if (distanceToTarget < 0.7f)
+        if (distanceToTarget < 0.8f)
         {
             SetReward(1.0f);
             EndEpisode();
@@ -105,7 +97,7 @@ public class MoveToGoalAgent : Agent
 
         // Fell off platform
         else if (transform.localPosition.y < 0)
-        {   
+        {
             SetReward(-1.0f);
             EndEpisode();
         }
