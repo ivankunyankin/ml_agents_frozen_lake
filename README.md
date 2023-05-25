@@ -8,7 +8,7 @@ The implementation was inspired by OpenAI's gym.
 
 :white_check_mark: Can be used with both Unity ML-Agents Trainer and its python low level API directly\
 :white_check_mark: A prefab was created from the environment which allows it to be duplicated for faster training\
-:white_check_mark: Random positions of the agent, its target and holes in the ice to prevent the agent from learning wrong patterns\ 
+:white_check_mark: Random positions of the agent, its target and holes in the ice to prevent the agent from learning wrong patterns 
 
 ![](frozen_lake.png)
 
@@ -19,7 +19,7 @@ Holes in the ice are set randomly across the hole grid except positions occupied
 
 As `observations` the agent receives and array of `20` floats.\
 The first four are `X` and `Z` coordinates of the agent itself and the target.
-The rest is a one-hot vector of holes in the ices states (0. for `not a hole` and 1. for `hole`.\
+The rest is a one-hot vector of holes in the ices states (0. for `not a hole` and 1. for `hole`).
 
 The `action space` represents an array of 2 floats. One for each direction (X and Z axis)
 
