@@ -91,14 +91,14 @@ public class MoveToGoalAgent : Agent
         // Reached target
         if (distanceToTarget < 0.8f)
         {
-            SetReward(1.0f);
+            AddReward(1.0f);
             EndEpisode();
         }
 
         // Fell off platform
         else if (transform.localPosition.y < 0)
         {
-            SetReward(-1.0f);
+            AddReward(-1.0f);
             EndEpisode();
         }
 
