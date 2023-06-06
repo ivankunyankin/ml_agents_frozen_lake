@@ -13,9 +13,17 @@ public class MoveToGoalAgent : Agent
     [SerializeField] private Transform targetTransform;
     [SerializeField] private GameObject blocks;
     Rigidbody rBody;
+    private int holeLayer;
+    private int blockLayer;
+    public Material holeMaterial;
+    public Material blockMaterial;
 
     void Start () {
         rBody = GetComponent<Rigidbody>();
+
+        // Get the layer IDs based on the layer names
+        holeLayer = LayerMask.NameToLayer("HoleLayer");
+        blockLayer = LayerMask.NameToLayer("BlockLayer");
     }
 
     public override void OnEpisodeBegin() {
@@ -45,7 +53,14 @@ public class MoveToGoalAgent : Agent
         // if holes not empty, clear it and coordinates
         if (holes?.Any() == true) {
             foreach (GameObject hole in holes) {
-                hole.SetActive(true);
+                // hole.SetActive(true);
+                hole.layer = blockLayer;
+
+                Collider colliderComponent = hole.GetComponent<Collider>();
+                colliderComponent.enabled = true;
+
+                Renderer rendererComponent = hole.GetComponent<Renderer>();
+                rendererComponent.material = blockMaterial;
             }
             holes.Clear();
         }
@@ -55,6 +70,17 @@ public class MoveToGoalAgent : Agent
         indices.Remove(agentX + 1 + 4 * agentZ);
         indices.Remove(targetX + 1 + 4 * targetZ);
 
+        // Debug.Log("Agent X: " + agentX.ToString());
+        // Debug.Log("Agent Z: " + agentZ.ToString());
+
+        // Debug.Log("Target X: " + targetX.ToString());
+        // Debug.Log("Target Z: " + targetZ.ToString());
+        
+        // string objectString = string.Join(", ", indices.Select(x => x.ToString()).ToArray());
+        // Debug.Log("Holes: " + objectString);
+
+
+
         // Reset the array to zeroes
         holesOneHot = new float[16];
 
@@ -63,21 +89,27 @@ public class MoveToGoalAgent : Agent
             int random_idx = Random.Range(0, indices.Count);
             GameObject block = blocks.transform.Find("block " + indices[random_idx]).gameObject;
             holes.Add(block);
-            block.SetActive(false);
+            // block.SetActive(false);
+            Collider colliderComponent = block.GetComponent<Collider>();
+            colliderComponent.enabled = false;
+
+            Renderer rendererComponent = block.GetComponent<Renderer>();
+            rendererComponent.material = holeMaterial;
+
+            block.layer = holeLayer;
             holesOneHot[indices[random_idx] - 1] = 1.0f;
             indices.RemoveAt(random_idx);
         }
 
     }
 
-    public override void CollectObservations(VectorSensor sensor) {
-        sensor.AddObservation(transform.localPosition[0]);
-        sensor.AddObservation(transform.localPosition[2]);
-        sensor.AddObservation(targetTransform.localPosition[0]);
-        sensor.AddObservation(targetTransform.localPosition[2]);
-        sensor.AddObservation(holesOneHot);
-
-    }
+    // public override void CollectObservations(VectorSensor sensor) {
+    //     sensor.AddObservation(transform.localPosition[0]);
+    //     sensor.AddObservation(transform.localPosition[2]);
+    //     sensor.AddObservation(targetTransform.localPosition[0]);
+    //     sensor.AddObservation(targetTransform.localPosition[2]);
+    //     sensor.AddObservation(holesOneHot);
+    // }
 
     public override void OnActionReceived(ActionBuffers actions) {
         float moveX = actions.ContinuousActions[0];
@@ -92,6 +124,7 @@ public class MoveToGoalAgent : Agent
         if (distanceToTarget < 0.8f)
         {
             AddReward(1.0f);
+            Debug.Log("Got the target!");
             EndEpisode();
         }
 
@@ -99,6 +132,7 @@ public class MoveToGoalAgent : Agent
         else if (transform.localPosition.y < 0)
         {
             AddReward(-1.0f);
+            Debug.Log("Drowned!");
             EndEpisode();
         }
 
