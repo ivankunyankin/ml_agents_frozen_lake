@@ -6,6 +6,7 @@ The implementation was inspired by OpenAI's gym.
 
 ### Features
 
+:white_check_mark: Includes a trained model for experiments\
 :white_check_mark: Can be used with both Unity ML-Agents Trainer and its python low level API directly\
 :white_check_mark: A prefab was created from the environment which allows it to be duplicated for faster training\
 :white_check_mark: Random positions of the agent, its target and holes in the ice to prevent the agent from learning wrong patterns 
@@ -14,16 +15,17 @@ The implementation was inspired by OpenAI's gym.
 
 ### Environment description
 The environment is a for `4 by 4` grid where the agent uses continuous actions to move.
-Positions of the agent and its target are set randomly at the begging of each episode.
-Holes in the ice are set randomly across the hole grid except positions occupied by the agent and its target.
+Positions of the agent and its target are set randomly at the beginning of each episode.
+Holes in the ice are set randomly across the whole grid except positions occupied by the agent and its target.
 
-As `observations` the agent receives and array of `20` floats.\
-The first four are `X` and `Z` coordinates of the agent itself and the target.
-The rest is a one-hot vector of holes in the ices states (0. for `not a hole` and 1. for `hole`).
+The agent uses two sources of observations:
+- Visual observations: A "map" of holes locations
+- Vector observations: `X` and `Z` coordinates of the agent itself and the target
 
-The `action space` represents an array of 2 floats. One for each direction (X and Z axis)
+The `action space` represents an array of 2 floats. One for each direction (X and Z axis). The environment can be tested manually in `Heuristic`
+mode by using standard WASD key combination. 
 
-The agent will receive a `reward` of 1 once reached the target and a reward of -1 when falling in a hole or from the edge of the grid.
+The agent will receive a `reward` of 1 once reached the target (1.5 if the direct path to the target was blocked by a hole) and a reward of -1 when falling in a hole or from the edge of the play area.
 It will also continuously get a bit of negative reward to prevent it from doing nothing.
 
 ### Installation
@@ -41,7 +43,3 @@ It will also continuously get a bit of negative reward to prevent it from doing 
 Run the following command to start training an agent:
 
 `mlagents-learn config/MoveToGoal.yaml --run-id=test_run`
-
-You can use behavioral cloning to speed up the training process. To do that add the `Demonstration Recorder`
-component to you agent, check `record` and play for some time. Then uncomment `behavioral_clonning` parameters in the config file
-and train.
