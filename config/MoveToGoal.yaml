@@ -1,11 +1,9 @@
 behaviors:
   MoveToGoal:
-
     trainer_type: ppo
-
     hyperparameters:
-      batch_size: 512
-      buffer_size: 10240
+      batch_size: 256
+      buffer_size: 4096
       learning_rate: 3.0e-4
       beta: 5.0e-3
       epsilon: 0.2
@@ -14,13 +12,11 @@ behaviors:
       learning_rate_schedule: linear
       beta_schedule: linear
       epsilon_schedule: linear
-
     network_settings:
       normalize: false
       hidden_units: 256
-      num_layers: 3
+      num_layers: 2
       vis_encode_type: simple
-
     reward_signals:
       extrinsic:
         gamma: 0.999
@@ -28,10 +24,18 @@ behaviors:
         network_settings:
           normalize: false
           hidden_units: 256
-          num_layers: 3
+          num_layers: 2
           vis_encode_type: simple
           deterministic: false
-
+      curiosity:
+        strength: 0.2
+        gamma: 0.9
+        network_settings:
+          normalize: false
+          hidden_units: 256
+          num_layers: 2
+          vis_encode_type: simple
+          deterministic: false
     max_steps: 1000000
-    time_horizon: 1024
+    time_horizon: 512
     summary_freq: 10000
