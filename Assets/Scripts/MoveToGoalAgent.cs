@@ -111,10 +111,30 @@ public class MoveToGoalAgent : Agent
 
     public override void OnActionReceived(ActionBuffers actions) {
 
-        float moveX = actions.ContinuousActions[0];
-        float moveZ = actions.ContinuousActions[1];
+        float forwardAction = Mathf.FloorToInt(actions.DiscreteActions[0]);
+        float sidewaysAction = Mathf.FloorToInt(actions.DiscreteActions[1]);
+
+        Vector3 movement = Vector3.zero;
+
+        if (forwardAction == 1)
+        {
+            movement += new Vector3(0, 0, 1); // forward
+        }
+        else if (forwardAction == 2)
+        {
+            movement += new Vector3(0, 0, -1); // backward
+        }
         
-        rBody.MovePosition(transform.position + new Vector3(moveX, 0, moveZ) * Time.deltaTime * moveSpeed);
+        if (sidewaysAction == 1)
+        {
+            movement += new Vector3(-1, 0, 0); // left
+        }
+        else if (sidewaysAction == 2)
+        {
+            movement += new Vector3(1, 0, 0); // right
+        }
+        
+        rBody.MovePosition(transform.position + movement * Time.deltaTime * moveSpeed);
 
         // If fell off platform
         if (transform.localPosition.y < 0)
@@ -123,20 +143,37 @@ public class MoveToGoalAgent : Agent
             EndEpisode();
         }
 
-        // Add a small negative reward every timestep to stimulate the agent to act
+        // Punisgh for idleness
         AddReward(-0.001f);
-
-        // Debug.Log(GetCumulativeReward());
-
     }
 
     public override void Heuristic(in ActionBuffers actionsOut) {
 
-        ActionSegment<float> continuousActions = actionsOut.ContinuousActions;
+        var discreteActions = actionsOut.DiscreteActions;
 
-        continuousActions[0] = Input.GetAxisRaw("Horizontal");
-        continuousActions[1] = Input.GetAxisRaw("Vertical");
+        // Default to no movement
+        discreteActions[0] = 0;
+        discreteActions[1] = 0;
 
+        // Forward / Backward
+        if (Input.GetKey(KeyCode.W))
+        {
+            discreteActions[0] = 1;
+        }
+        else if (Input.GetKey(KeyCode.S))
+        {
+            discreteActions[0] = 2;
+        }
+
+        // Left / Right
+        if (Input.GetKey(KeyCode.A))
+        {
+            discreteActions[1] = 1;
+        }
+        else if (Input.GetKey(KeyCode.D))
+        {
+            discreteActions[1] = 2;
+        }
     }
 
     private void OnCollisionEnter(Collision collision) {
