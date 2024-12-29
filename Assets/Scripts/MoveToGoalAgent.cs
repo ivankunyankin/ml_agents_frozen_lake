@@ -17,7 +17,7 @@ public class MoveToGoalAgent : Agent
     private int blockLayer;
     public Material holeMaterial;
     public Material blockMaterial;
-    Rigidbody rBody;
+    private Rigidbody rBody;
 
     void Start () {
 
