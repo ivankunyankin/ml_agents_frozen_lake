@@ -5,19 +5,22 @@ using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
+using System.Globalization;
 
 public class MoveToGoalAgent : Agent
 {
     private List<GameObject> holes = new List<GameObject>();
     [SerializeField] private GameObject target;
     [SerializeField] private GameObject blocks;
-    private float gotTargetReward = 1.0f;
     private float moveSpeed = 2.5f;
+    private float[] holesOneHot = new float[16];
     private int holeLayer;
     private int blockLayer;
     public Material holeMaterial;
     public Material blockMaterial;
     private Rigidbody rBody;
+    private bool reachedTarget = false;
+
 
     void Start () {
 
@@ -32,7 +35,7 @@ public class MoveToGoalAgent : Agent
     public override void OnEpisodeBegin() {
 
         // Reset base reward in case it was altered
-        ResetReward();
+        reachedTarget = false;
 
         // Determine the agent's and target's positions
         int agentX = Random.Range(0, 4);
@@ -74,8 +77,10 @@ public class MoveToGoalAgent : Agent
         indices.Remove(agentX + 1 + 4 * agentZ);
         indices.Remove(targetX + 1 + 4 * targetZ);
 
+        int numHoles = Mathf.FloorToInt(Academy.Instance.EnvironmentParameters.GetWithDefault("number_of_holes", 4f));
+        holesOneHot = new float[16];
         // Choose locations for holes and transorm ice blocks to holes
-        while (holes.Count < 4) {  // set the desired number of holes
+        while (holes.Count < numHoles) {  // set the desired number of holes
 
             // Randomly choose an index to access the remaining indices (after excluding agent/target positions)
             int random_idx = Random.Range(0, indices.Count);
@@ -91,21 +96,19 @@ public class MoveToGoalAgent : Agent
             // Change the material so its more clear for on the observation camera view
             Renderer rendererComponent = block.GetComponent<Renderer>();
             rendererComponent.material = holeMaterial;
-
+            holesOneHot[indices[random_idx] - 1] = 1.0f;
             // Remove the taken index from the available positions
             indices.RemoveAt(random_idx);
         }
-
-        AddRewardForDifficulty();
-
     }
 
     public override void CollectObservations(VectorSensor sensor) {
 
-        sensor.AddObservation(transform.localPosition[0]);
-        sensor.AddObservation(transform.localPosition[2]);
-        sensor.AddObservation(target.transform.localPosition[0]);
-        sensor.AddObservation(target.transform.localPosition[2]);
+        sensor.AddObservation(transform.localPosition[0] / 6f);
+        sensor.AddObservation(transform.localPosition[2] / 6f);
+        sensor.AddObservation(target.transform.localPosition[0] / 6f);
+        sensor.AddObservation(target.transform.localPosition[2] / 6f);
+        sensor.AddObservation(holesOneHot);
 
     }
 
@@ -139,12 +142,18 @@ public class MoveToGoalAgent : Agent
         // If fell off platform
         if (transform.localPosition.y < 0)
         {
-            AddReward(-1.0f);
+            AddReward(-1f);
+            EndEpisode();
+        }
+
+        if (reachedTarget)
+        {
+            AddReward(1f);
             EndEpisode();
         }
 
         // Punisgh for idleness
-        AddReward(-0.001f);
+        AddReward(-0.0005f);
     }
 
     public override void Heuristic(in ActionBuffers actionsOut) {
@@ -176,37 +185,11 @@ public class MoveToGoalAgent : Agent
         }
     }
 
-    private void OnCollisionEnter(Collision collision) {
-
-    if (collision.gameObject == target) {
-
-        AddReward(gotTargetReward);
-        EndEpisode();
-
-        }
-    }
-
-    private void AddRewardForDifficulty() {
-
-        Vector3 directionToGoal = (target.transform.localPosition - transform.localPosition).normalized;
-        float distanceToGoal = Vector3.Distance(transform.localPosition, target.transform.localPosition);
-
-        // Check if there's a hole between the agent and the goal
-        RaycastHit hit;
-        LayerMask layerMask = LayerMask.GetMask("HoleLayer");
-
-        // If there is a hole, add increase the reward
-        if (Physics.SphereCast(transform.localPosition, 0.6f, directionToGoal, out hit, distanceToGoal, layerMask))
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject == target)
         {
-            gotTargetReward = 1.5f;
+            reachedTarget = true;
         }
-
     }
-
-    private void ResetReward() {
-
-        gotTargetReward = 1.0f;
-    
-    }
-
 }
