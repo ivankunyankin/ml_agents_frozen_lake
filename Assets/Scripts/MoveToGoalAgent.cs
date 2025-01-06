@@ -1,40 +1,28 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq; 
 using UnityEngine;
 using Unity.MLAgents;
 using Unity.MLAgents.Actuators;
 using Unity.MLAgents.Sensors;
-using System.Globalization;
 
 public class MoveToGoalAgent : Agent
 {
-    private List<GameObject> holes = new List<GameObject>();
     [SerializeField] private GameObject target;
     [SerializeField] private GameObject blocks;
-    private float moveSpeed = 2.5f;
+    private List<GameObject> holes = new List<GameObject>();
     private float[] holesOneHot = new float[16];
-    private int holeLayer;
-    private int blockLayer;
-    public Material holeMaterial;
-    public Material blockMaterial;
-    private Rigidbody rBody;
     private bool reachedTarget = false;
+    private float moveSpeed = 2.5f;
+    private Rigidbody rBody;
 
 
     void Start () {
-
         rBody = GetComponent<Rigidbody>();
-
-        // Get the layer IDs based on the layer names
-        holeLayer = LayerMask.NameToLayer("HoleLayer");
-        blockLayer = LayerMask.NameToLayer("BlockLayer");
-
     }
 
     public override void OnEpisodeBegin() {
 
-        // Reset base reward in case it was altered
+        // Use a flag to react to the episode end within the OnActionReceived method
         reachedTarget = false;
 
         // Determine the agent's and target's positions
@@ -58,16 +46,10 @@ public class MoveToGoalAgent : Agent
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, 0));
         target.transform.localPosition = new Vector3(targetX * 2, 0.5f, targetZ * 2);
 
-        // if holes not empty, transoform them back to ice blocks and clear the list
+        // if holes not empty, activate the blocks back and clear the list
         if (holes?.Any() == true) {
             foreach (GameObject hole in holes) {
-
-                // change the layer back for it to be invisible for the observation camera
-                hole.layer = blockLayer;
-
-                // switch back to the ice (block) material
-                Renderer rendererComponent = hole.GetComponent<Renderer>();
-                rendererComponent.material = blockMaterial;
+                hole.SetActive(true);
             }
             holes.Clear();
         }
@@ -77,8 +59,8 @@ public class MoveToGoalAgent : Agent
         indices.Remove(agentX + 1 + 4 * agentZ);
         indices.Remove(targetX + 1 + 4 * targetZ);
 
-        int numHoles = Mathf.FloorToInt(Academy.Instance.EnvironmentParameters.GetWithDefault("number_of_holes", 4f));
         holesOneHot = new float[16];
+        int numHoles = Mathf.FloorToInt(Academy.Instance.EnvironmentParameters.GetWithDefault("number_of_holes", 4f));
         // Choose locations for holes and transorm ice blocks to holes
         while (holes.Count < numHoles) {  // set the desired number of holes
 
@@ -88,15 +70,15 @@ public class MoveToGoalAgent : Agent
             // Retrieve the corresponding block
             GameObject block = blocks.transform.Find("block " + indices[random_idx]).gameObject;
 
-            holes.Add(block); // add it to the list to change it back at the beginning of the next episode
+            // Add it to the list to change it back at the beginning of the next episode
+            holes.Add(block);
+            
+            // Deactivate the block to create a hole
+            block.SetActive(false);
 
-            // Change the layer so its visible for the observation camera
-            block.layer = holeLayer;
-
-            // Change the material so its more clear for on the observation camera view
-            Renderer rendererComponent = block.GetComponent<Renderer>();
-            rendererComponent.material = holeMaterial;
+            // Set the corresponding index value to 1
             holesOneHot[indices[random_idx] - 1] = 1.0f;
+
             // Remove the taken index from the available positions
             indices.RemoveAt(random_idx);
         }

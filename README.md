@@ -43,3 +43,6 @@ It will also continuously get a bit of negative reward to prevent it from doing 
 Run the following command to start training an agent:
 
 `mlagents-learn config/MoveToGoal.yaml --run-id=test_run`
+
+### TO DO
+- Add agent's velocity (X, Z) to observations to prevent the agent from not being able to decide in which direction to go
