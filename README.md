@@ -18,14 +18,14 @@ The environment is a for `4 by 4` grid where the agent uses continuous actions t
 Positions of the agent and its target are set randomly at the beginning of each episode.
 Holes in the ice are set randomly across the whole grid except positions occupied by the agent and its target.
 
-The agent uses two sources of observations:
-- Visual observations: A "map" of holes locations
-- Vector observations: `X` and `Z` coordinates of the agent itself and the target
+Agent observations:
+- `X` and `Z` coordinates of the agent itself and the target
+- "one-hot" vector of 16 values with ones for indices of absent blocks (holes)
 
-The `action space` represents an array of 2 floats. One for each direction (X and Z axis). The environment can be tested manually in `Heuristic`
+The agent uses discrete actions to navigate itself. The environment can be tested manually in `Heuristic`
 mode by using standard WASD key combination. 
 
-The agent will receive a `reward` of 1 once reached the target (1.5 if the direct path to the target was blocked by a hole) and a reward of -1 when falling in a hole or from the edge of the play area.
+The agent will receive a `reward` of 1 once reached the target and a reward of -1 when falling in a hole or from the edge of the play area.
 It will also continuously get a bit of negative reward to prevent it from doing nothing.
 
 ### Installation
